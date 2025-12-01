@@ -1,0 +1,48 @@
+body {
+    background: #eef5ff;
+    font-family: Calibri, sans-serif;
+}
+
+.container {
+    width: 70%;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid #bbb;
+}
+
+button {
+    background: #0077ff;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+td, th {
+    padding: 10px;
+    border: 1px solid #777;
+    text-align: center;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}

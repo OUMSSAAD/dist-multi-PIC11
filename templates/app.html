@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Distillation Multicomposants</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 24px 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: #718096;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 32px auto;
+            padding: 0 32px;
+        }
+        
+        .layout {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 32px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 32px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 8px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+        
+        .compound-row {
+            display: grid;
+            grid-template-columns: 1fr 100px 32px;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: #fed7d7;
+            color: #c53030;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: #fc8181;
+            color: white;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 10px;
+            background: #f7fafc;
+            border: 1px dashed #cbd5e0;
+            border-radius: 6px;
+            color: #4a5568;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .btn-add:hover {
+            background: #edf2f7;
+            border-color: #a0aec0;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 32px;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading-state {
+            display: none;
+            text-align: center;
+            padding: 80px 40px;
+        }
+        
+        .loading-state.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #4299e1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .results-container.active {
+            display: block;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .metric-unit {
+            font-size: 13px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+        
+        .chart-section {
+            margin-bottom: 32px;
+        }
+        
+        .chart-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 16px;
+        }
+        
+        .chart-wrapper {
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .chart-wrapper img {
+            width: 100%;
+            border-radius: 6px;
+            display: block;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 32px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background: #f7fafc;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #2d3748;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        tr:hover {
+            background: #f7fafc;
+        }
+        
+        .alert {
+            display: none;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        
+        .alert.active {
+            display: block;
+        }
+        
+        .alert-error {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+        }
+        
+        @media (max-width: 1200px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 16px;
+                margin: 16px auto;
+            }
+            
+            .panel {
+                padding: 20px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1>Distillation Multicomposants</h1>
+            <p>Modélisation et Simulation des Procédés - Prof. BAKHER Zine Elabidine - PIC - UH1</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="layout">
+            <!-- Panneau de configuration -->
+            <div class="panel">
+                <form id="simulationForm">
+                    <!-- ComposÃ©s -->
+                    <div class="section-title">Composés</div>
+                    <div id="compoundsContainer"></div>
+                    <button type="button" class="btn-add" onclick="addCompound()">+ Ajouter un composé</button>
+                    
+                    <!-- Conditions opÃ©ratoires -->
+                    <div class="section-title" style="margin-top: 32px;">Conditions opératoires</div>
+                    
+                    <div class="form-group">
+                        <label>Débit d'alimentation (kmol/h)</label>
+                        <input type="number" id="flowRate" value="100" step="1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Pression (Pa)</label>
+                        <input type="number" id="pressure" value="101325" step="1000" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Qualité alimentation (q)</label>
+                        <select id="feedQuality" required style="padding: 10px;">
+                            <option value="1.0" selected>q = 1.0 (Liquide saturé)</option>
+                            <option value="0.0">q = 0.0 (Vapeur saturé)</option>
+                            <option value="0.5">q = 0.5 (Mélange 50/50)</option>
+                        </select>
+                        <small style="display: block; margin-top: 5px; color: #718096; font-size: 12px;">
+                            Voir Section 3.2.1 du PDF
+                        </small>
+                    </div>
+                    
+                    <!-- SpÃ©cifications -->
+                    <div class="section-title" style="margin-top: 32px;">Spécifications</div>
+                    
+                    <div class="form-group">
+                        <label>Récupération clé léger (%)</label>
+                        <input type="number" id="recoveryLK" value="95" step="1" min="50" max="99.9" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Récupération clé lourd (%)</label>
+                        <input type="number" id="recoveryHK" value="95" step="1" min="50" max="99.9" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Facteur de reflux (R/R<sub>min</sub>)</label>
+                        <input type="number" id="refluxFactor" value="1.3" step="0.1" min="1.1" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Efficacité des plateaux (%)</label>
+                        <input type="number" id="efficiency" value="70" step="5" min="30" max="100" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary" id="simulateBtn">
+                        Lancer la simulation
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Panneau de rÃ©sultats -->
+            <div>
+                <div class="alert alert-error" id="errorMessage"></div>
+                
+                <!-- Ã‰tat de chargement -->
+                <div class="panel loading-state" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Calcul en cours...</div>
+                </div>
+                
+                <!-- RÃ©sultats -->
+                <div class="results-container" id="results">
+                    <div class="panel">
+                        <div class="section-title">Résultats</div>
+                        <div class="metrics-grid" id="metricsGrid"></div>
+                        
+                        <div class="chart-section">
+                            <div class="chart-title">Bilans matières</div>
+                            <div class="chart-wrapper">
+                                <img id="plotMaterialBalance" alt="Bilans matiÃ¨res">
+                            </div>
+                        </div>
+                        
+                        <div class="chart-section">
+                            <div class="chart-title">Profils de composition</div>
+                            <div class="chart-wrapper">
+                                <img id="plotComposition" alt="Profils de composition">
+                            </div>
+                        </div>
+                        
+                        <div class="chart-section">
+                            <div class="chart-title">Profil de température</div>
+                            <div class="chart-wrapper">
+                                <img id="plotTemperature" alt="Profil de tempÃ©rature">
+                            </div>
+                        </div>
+                        
+                        <div class="table-container">
+                            <div class="section-title">Compositions des produits</div>
+                            <table id="compositionsTable"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const compoundsData = {{ compounds|tojson }};
+        
+        // Initialiser avec 3 composÃ©s par dÃ©faut
+        window.onload = function() {
+            initCompounds();
+        };
+        
+        function initCompounds() {
+            const defaults = [
+                {compound: 'benzene', composition: 0.333},
+                {compound: 'toluene', composition: 0.333},
+                {compound: 'o-xylene', composition: 0.334}
+            ];
+            
+            defaults.forEach(d => {
+                addCompound(d.compound, d.composition);
+            });
+        }
+        
+        function addCompound(defaultCompound = null, defaultComp = 0.100) {
+            const container = document.getElementById('compoundsContainer');
+            const row = document.createElement('div');
+            row.className = 'compound-row';
+            
+            let options = '';
+            for (const [key, value] of Object.entries(compoundsData)) {
+                const selected = key === defaultCompound ? 'selected' : '';
+                options += `<option value="${key}" ${selected}>${value}</option>`;
+            }
+            
+            row.innerHTML = `
+                <select class="compound-select" required>${options}</select>
+                <input type="number" class="composition-input" step="0.001" min="0" max="1" value="${defaultComp.toFixed(3)}" required>
+                <button type="button" class="btn-icon" onclick="removeCompound(this)"> X </button>
+            `;
+            
+            container.appendChild(row);
+        }
+        
+        function removeCompound(btn) {
+            const rows = document.querySelectorAll('.compound-row');
+            if (rows.length > 2) {
+                btn.closest('.compound-row').remove();
+            } else {
+                alert('Minimum 2 composÃ©s requis');
+            }
+        }
+        
+        document.getElementById('simulationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const compounds = [];
+            const compositions = [];
+            
+            document.querySelectorAll('.compound-row').forEach(row => {
+                compounds.push(row.querySelector('.compound-select').value);
+                compositions.push(parseFloat(row.querySelector('.composition-input').value));
+            });
+            
+            const data = {
+                compounds,
+                compositions,
+                flow_rate: parseFloat(document.getElementById('flowRate').value),
+                pressure: parseFloat(document.getElementById('pressure').value),
+                feed_quality: parseFloat(document.getElementById('feedQuality').value),
+                recovery_lk: parseFloat(document.getElementById('recoveryLK').value) / 100,
+                recovery_hk: parseFloat(document.getElementById('recoveryHK').value) / 100,
+                reflux_factor: parseFloat(document.getElementById('refluxFactor').value),
+                efficiency: parseFloat(document.getElementById('efficiency').value) / 100
+            };
+            
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('errorMessage').classList.remove('active');
+            document.getElementById('simulateBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/simulate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Erreur: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+                document.getElementById('simulateBtn').disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            const r = data.results;
+            
+            document.getElementById('metricsGrid').innerHTML = `
+                <div class="metric-card">
+                    <div class="metric-label">Plateaux réels</div>
+                    <div class="metric-value">${r.N_real}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Reflux</div>
+                    <div class="metric-value">${r.R.toFixed(2)}</div>
+                    <div class="metric-unit">R<sub>min</sub> = ${r.R_min.toFixed(2)}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Distillat</div>
+                    <div class="metric-value">${r.D.toFixed(1)}</div>
+                    <div class="metric-unit">kmol/h</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Résidu</div>
+                    <div class="metric-value">${r.B.toFixed(1)}</div>
+                    <div class="metric-unit">kmol/h</div>
+                </div>
+            `;
+            
+            document.getElementById('plotMaterialBalance').src = 'data:image/png;base64,' + data.plots.material_balance;
+            document.getElementById('plotComposition').src = 'data:image/png;base64,' + data.plots.composition_profile;
+            document.getElementById('plotTemperature').src = 'data:image/png;base64,' + data.plots.temperature_profile;
+            
+            // Tableau dÃ©taillÃ© des compositions (3 dÃ©cimales)
+            let tableHTML = `
+                <tr>
+                    <th>Composant </th>
+                    <th>Alimentation (z<sub>F</sub>)</th>
+                    <th>Distillat (x<sub>D</sub>)</th>
+                    <th>Résidu (x<sub>B</sub>)</th>
+                    <th>Volatilité (A)</th>
+                </tr>
+            `;
+            
+            for (let i = 0; i < data.compound_names.length; i++) {
+                const recovery_D = ((r.x_D[i] * r.D) / (r.z_F[i] * (r.D + r.B)) * 100);
+                const recovery_B = ((r.x_B[i] * r.B) / (r.z_F[i] * (r.D + r.B)) * 100);
+                
+                tableHTML += `
+                    <tr>
+                        <td><strong>${data.compound_names[i].split('(')[0].trim()}</strong></td>
+                        <td>${r.z_F[i].toFixed(3)}</td>
+                        <td>${r.x_D[i].toFixed(3)} <small>(${recovery_D.toFixed(1)}%)</small></td>
+                        <td>${r.x_B[i].toFixed(3)} <small>(${recovery_B.toFixed(1)}%)</small></td>
+                        <td>${r.volatilities[i].toFixed(3)}</td>
+                    </tr>
+                `;
+            }
+            
+            tableHTML += `
+                <tr style="background: #f0f0f0; font-weight: bold;">
+                    <td>TOTAL</td>
+                    <td>1.000</td>
+                    <td>1.000</td>
+                    <td>1.000</td>
+                    <td>-</td>
+                </tr>
+            `;
+            
+            document.getElementById('compositionsTable').innerHTML = tableHTML;
+            
+            document.getElementById('results').classList.add('active');
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+        }
+    </script>
+</body>
+</html>
